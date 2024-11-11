@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Identificar la forma dibujada</title>
+
+    <!-- P5.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+    <!-- ML5.js -->
+    <script src="https://unpkg.com/ml5@0.12.2/dist/ml5.min.js"></script>
+  </head>
+  <body>
+    <style>
+      body {
+        background-color: antiquewhite;
+      }
+    </style>
+
+    <script>
+
+      //PASO 1: Variables y objetos
+      let shapeClassifier;    //RedNeuronal
+      let canvas;             //Lienzo
+      let resultsDiv;         //Capa mostrar resultados
+      let inputImage;         //Analizar RN
+      let clearButton;        //Reset lienzo
+
+      //FUNCIONES
+      //Configuración de la RN
+      function setup(){
+        canvas = createCanvas(400, 400);
+
+        //Configurar la redNeuronal (lectura)
+        let options = {
+          inputs: [64, 64, 4],
+          task: 'imageClassification'
+        };
+
+        //Instancia y configuración RN
+        shapeClassifier = ml5.neuralNetwork(options);
+
+        //Modelos generados (2 JSON + 1 BIN)
+        const modelDetails = {
+          model: './model/model.json',
+          metadata: './model/model_meta.json',
+          weights: './model/model.weights.bin'
+        };
+        
+        background(255);
+        resultsDiv = createDiv("Cargando el modelo");
+        inputImage = createGraphics(64, 64);
+
+        //Limpiar
+        clearButton = createButton("Limpiar");
+        clearButton.mousePressed(function (){
+          background(255);
+        });
+
+        shapeClassifier.load(modelDetails, modelLoaded);
+      }
+
+      //El modelo LOCAL ha sido cargado (verificar)
+      function modelLoaded(){
+        console.log("Modelo cargado correctamente");
+        //Una vez cargado el modelo, se inicia la IDENTIFICACIÓN...
+        classifyImage();
+      }
+
+      //Analizar el valor de entrada >>> RN
+      function classifyImage(){
+        //NOTA: La red neuronal requiere 64x64, el lienzo tiene 400x400
+        //Solución: reescalar
+        inputImage.copy(canvas, 0, 0, 400, 400, 0, 0, 64, 64);
+        shapeClassifier.classify({image: inputImage}, goResults);
+      }
+
+      //Resultado obtenido de classifyImage | callbackfunction
+      function goResults(err, result){
+        if (err){
+          console.error(err);
+          return;
+        }
+
+        //Mostrar el resultado en el DIV | result[0],[1],[2]
+        let label = result[0].label;
+        let confidence = result[0].confidence; //nf()
+        resultsDiv.html(`Imagen: ${label}, confianza: ${confidence}`);
+
+        //Se vuelve a ejecutar
+        classifyImage();
+      }
+
+      //Dibujar en el lienzo/canvas
+      function draw(){
+        if (mouseIsPressed){
+          strokeWeight(16);
+          line(mouseX, mouseY, pmouseX, pmouseY);
+        }
+      }
+
+    </script>
+  </body>
+</html>

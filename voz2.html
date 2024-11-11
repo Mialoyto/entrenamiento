@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="e">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+
+  <textarea type="text" id="texto" rows="5"></textarea>
+  <button type="button" id="hablar" >Hablar</button>
+  <button type="button" id="pausar" >Pausar / continuar</button>
+  <button type="button" id="cancelar" >Cancelar</button>
+  <script>
+    function $(object){
+      return document.querySelector(object);
+    }
+
+    const hablar = $('#hablar');
+    const pausar = $('#pausar');
+    const cancelar = $('#cancelar');
+
+
+    const addMessage = () =>{
+      const text = $('#texto').value.trim();
+      const message = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(message);
+    }
+
+    const pauseResume = () =>{
+      if(speechSynthesis.paused){
+        speechSynthesis.resume();  // continuar
+      }else{
+        speechSynthesis.pause(); // pausar
+      }
+    }
+
+    const cancel = () =>{
+      speechSynthesis.cancel();
+    }
+
+    hablar.addEventListener("click", () => addMessage()); 
+    pausar.addEventListener("click", () => pauseResume());
+    cancelar.addEventListener("click", () => cancel());
+  </script>
+
+  
+</body>
+</html>

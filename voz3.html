@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form action="" autocomplete="off">
+      <div>
+        <label for="voice">Seleccione una voz:</label>
+        <select name="voice" id="voice"></select>
+      </div>
+
+      <div>
+        <label for="pitch">Tono:</label>
+        <input type="range" id="pitch" min="0" max="2" step="0.25" value="1" />
+      </div>
+
+      <div>
+        <label for="rate">Velocidad:</label>
+        <input type="range" id="rate" min="0" max="2" step="0.25" value="1" />
+      </div>
+
+      <div class="div">
+        <label for="volume">Volumen</label>
+        <input type="range" id="volume" min="0" max="1" step="0.1" value="1" />
+      </div>
+
+      <div>
+        <textarea type="text" id="" cols="50" rows="7"></textarea>
+      </div>
+
+      <div>
+        <button type="button" id="hablar">Hablar</button>
+        <button type="button" id="cancelar">Cancelar</button>
+      </div>
+    </form>
+
+    <script>
+      // funcion de referencia
+      function $(object) {
+        return document.querySelector(object);
+      }
+
+      // detectar y agregar voces
+      speechSynthesis.addEventListener("voiceschanged", () => {
+        const voices = speechSynthesis.getVoices();
+        // console.log(voices);
+   
+        const tagOption = voices.map((voice, index) => {
+          return `<option value="${index}">${voice.name}</option>`;
+        });
+
+        // console.log(tagOption);
+        $("#voice").innerHTML = tagOption;
+      });
+
+      // reproducir la voz
+      const addMessage = () => {
+        const text = $("textarea").value;
+        const message = new SpeechSynthesisUtterance(text);
+
+        // seleccionar la voz
+        const index = $("#voice").value;
+        console.log(index);
+        message.voice = speechSynthesis.getVoices()[index];
+
+
+        // tono
+        message.pitch = $("#pitch").value;
+
+        // velocidad
+        message.rate = $("#rate").value;
+
+        // volumen
+        message.volume = $("#volume").value;
+
+        speechSynthesis.speak(message);
+      };
+
+      $("#hablar").addEventListener("click", () => {
+        addMessage();
+      });
+      $("#cancelar").addEventListener("click", () => {
+        speechSynthesis.cancel();
+      });
+
+    </script>
+  </body>
+</html>

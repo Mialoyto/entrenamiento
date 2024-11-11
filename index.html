@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <!-- Librerías -->
+  <!-- P5.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+  <!-- ML5.js -->
+  <script src="https://unpkg.com/ml5@0.12.2/dist/ml5.min.js"></script>  
+
+</head>
+<body>
+  
+  <script>
+    //PASO 1: x3 Arreglos
+    let rombo = [];
+    let trapecio = [];
+    // let triangles = [];
+
+    //Objeto para entrenamiento
+    let shapeClassifier; //Clasificador de imágenes
+
+    //PASO 2: Referencia entre PNG => array
+    function preload(){
+      for (let i = 0; i < 150; i++){
+        //Estructurar "001", "002"... etc | nf() new format
+        let index = nf((i + 1), 3, 0); //001
+        rombo[i] = loadImage(`./data/rombo/rombo${index}.png`);
+        trapecio[i] = loadImage(`./data/rombo/trapecio${index}.png`);
+        // triangles[i] = loadImage(`./data/triangle${index}.png`);
+        // console.log(rombo[i]);
+        // console.log(trapecio[i]);
+      }
+    }
+
+    //PASO 3: Configurar la red neuronal
+    function setup(){
+      createCanvas(400, 400);
+
+      //inputs  : características de las imágenes (entrada/entrenamiento)
+      //task    : operación, clasificación (encontrar patrones)
+      //debug   : inspeccionar el progreso del entrenamiento
+      let options = {
+        inputs    : [128, 128, 4],
+        task      : 'imageClassification',
+        debug     : true
+      };
+
+      shapeClassifier = ml5.neuralNetwork(options);
+
+      //Ya tenemos la red neural preparada, le enviamos nuestras imágenes
+      for (let i = 0; i < 150; i++){
+        //ENTRENAMIENTO SUPERVISADO
+        //Datos de entrenamiento (INPUT - TARGET)
+        let input = { image: rombo[i] };
+        let target = { label: 'rombo' }; //confidence 0 - 1
+        //Agregando datos al modelo
+        shapeClassifier.addData(input, target);
+
+        //Cuadrados...
+        shapeClassifier.addData({image: trapecio[i]}, {label: 'cuadrado'});
+
+        //Triángulos
+        // shapeClassifier.addData({image: triangles[i]}, {label: 'triangulo'});
+      }
+
+      //Normalización (asegurarnos que todas las imágenes/input sean iguales)
+      shapeClassifier.normalizeData();
+
+      //Entrena al modelo...
+      shapeClassifier.train({epochs: 50}, finishedTraining);
+    }
+
+    function finishedTraining(){
+      console.log("Red neuronal lista, modelo terminado");
+      shapeClassifier.save(); //se generan 3 archivos (x2 JSON + 1 BIN)
+    }
+
+  </script>
+</body>
+</html>
